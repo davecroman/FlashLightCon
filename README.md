@@ -7,15 +7,15 @@ If you're having trouble connecting to the Flash Debugger (possibly because of v
 
 Setup and Usage
 ---------------
-- Import the package lightcon on your project.
-- On your main sprite (or any sprite that has access to the *stage*), add the following line:
+1. Import the package lightcon on your project.
+2. On your main sprite (or any sprite that has access to the *stage*), add the following line:
 
-    InGameLightConsole.embed(this);
+    `InGameLightConsole.embed(this);`
 
 *embed* accepts *Sprite* as a parameter. Make sure that the object you're passing has access to the stage.
 
-- Display output on the FlashLightCon console by calling its print(object:Object) method.
+3. Display output on the FlashLightCon console by calling its print(object:Object) method.
 
-    InGameLightConsole.print("Hello, world!");
+    `InGameLightConsole.print("Hello, world!");`
 
-- When running your application, press F1 to display the console.
+4. When running your application, press F1 to display the console.
