@@ -1,4 +1,4 @@
-![screenshot](github.com/davecroman/FlashLightCon/blob/master/screenshot.jpeg)
+![screenshot](screenshot.jpeg)
 
 FlashLightCon
 =================
