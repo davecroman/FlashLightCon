@@ -1,4 +1,4 @@
-![screenshot](screenshot.jpeg)
+![screenshot](screenshot.jpg)
 
 FlashLightCon
 =================
