@@ -8,6 +8,7 @@ package lightcon
 	import flash.text.AntiAliasType;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
 	import flash.ui.Keyboard;
 	/**
 	 * ...
@@ -16,28 +17,30 @@ package lightcon
 	public class InGameLightConsole extends Sprite
 	{
 		/*============================STATIC CONSTANCTS==============================*/
-		public static const MAX_LINES:int = 20;
-		public static const HEIGHT_PER_LINE:uint = 16;
-		public static const LINE_DELIMITER:String = "\n";
+		public static const MAX_LINES:int = 10;
+		public static const LINE_HEIGHT:int = 15;
 		public static const FONT:String = "Arial";
-		public static const TRANSPARENCY:Number = 0.7;
-		
+		public static const TRANSPARENCY:Number = 0.5;
+		public static const SPACE_ALLOWANCE = 5;
+		public static const LINE_NUMBER_WIDTH = 30;
 		
 		private static var bg:Shape;
-		private static var window:Stage;
-		
 		private static var bgHeight:Number;
-		private static var textField:TextField;
+		private static var window:Stage;
+	
 		private static var lineCount:uint = 0;
 		private static var string:String = "";
 		
+		private static var strings:Vector.<TextField>;
+		private static var lineNumbers:Vector.<TextField>;
+		
 		private static var visible:Boolean = true;
+		private static var toggleKey:uint;
 		
 		public function InGameLightConsole(window:Stage) 
 		{
 			InGameLightConsole.window = window;
-			InGameLightConsole.bgHeight = InGameLightConsole.MAX_LINES * InGameLightConsole.HEIGHT_PER_LINE;
-			InGameLightConsole.textField = new TextField();
+			InGameLightConsole.bgHeight = InGameLightConsole.MAX_LINES * LINE_HEIGHT + SPACE_ALLOWANCE;
 			
 			initialize();
 		}
@@ -46,37 +49,72 @@ package lightcon
 		{
 			drawBG();
 			
-			InGameLightConsole.textField.defaultTextFormat = new TextFormat(InGameLightConsole.FONT, 12, 0xFFFFFF);
-			InGameLightConsole.textField.selectable = false;
-			InGameLightConsole.textField.multiline = true;
-			InGameLightConsole.textField.antiAliasType = AntiAliasType.ADVANCED;
-			InGameLightConsole.textField.sharpness = 100;
-			InGameLightConsole.textField.width = window.stageWidth;
-			InGameLightConsole.textField.wordWrap = true;
-			InGameLightConsole.textField.height = window.stageHeight;
+			strings = new Vector.<TextField>(InGameLightConsole.MAX_LINES);
+			lineNumbers = new Vector.<TextField>(InGameLightConsole.MAX_LINES);
+			
+			var index:int;
+			
+			var lineNumtextFormat:TextFormat = new TextFormat(InGameLightConsole.FONT, 12, 0xFFFFFF, true, true, false, null, null, TextFormatAlign.RIGHT);
+			var textFormat:TextFormat = new TextFormat(InGameLightConsole.FONT, 12, 0xFFFFFF);
+			
+			
+			for ( index = 0; index < lineNumbers.length; index++) {
+				lineNumbers[index] = new TextField();
+				lineNumbers[index].defaultTextFormat = lineNumtextFormat;
+				lineNumbers[index].selectable = true;
+				lineNumbers[index].multiline = true;
+				lineNumbers[index].width = LINE_NUMBER_WIDTH;
+				lineNumbers[index].wordWrap = true;
+				lineNumbers[index].height = window.stageHeight;
+				lineNumbers[index].y = index * LINE_HEIGHT;
+				lineNumbers[index].height = LINE_HEIGHT + SPACE_ALLOWANCE;
+				
+				this.addChild(lineNumbers[index]);
+			}
+			
+			for ( index = 0; index < strings.length; index++) {
+				strings[index] = new TextField();
+				strings[index].defaultTextFormat = textFormat;
+				strings[index].selectable = true;
+				strings[index].multiline = true;
+				strings[index].width = window.stageWidth;
+				strings[index].wordWrap = true;
+				strings[index].height = window.stageHeight;
+				strings[index].x = LINE_NUMBER_WIDTH + SPACE_ALLOWANCE;
+				strings[index].y = index * LINE_HEIGHT;
+				strings[index].height = LINE_HEIGHT + SPACE_ALLOWANCE;
+
+				this.addChild(strings[index]);
+			}
 			
 			window.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler );
-			this.addChild(textField);
+			toggleKey = Keyboard.F1;
+		
 			this.hide();
+			this.show();
 		}
 		
 		private function keyDownHandler(e:KeyboardEvent):void 
 		{
 			switch(e.keyCode) {
-				case Keyboard.F1:
+				case toggleKey:
 					if ( InGameLightConsole.visible ) {
 						hide();
 					}else {
 						show();
 					}
 					break;
-				case Keyboard.F2:
-					InGameLightConsole.print("hello");
+				case Keyboard.F3:
+					print("Line number " + lineCount);
+					break;
 			}
 		}
 		
 		public function hide():void {
-			InGameLightConsole.textField.visible = false;
+			for ( var index:int = 0; index < strings.length; index++) {
+				strings[index].visible = false;
+				lineNumbers[index].visible = false;
+			}
 			
 			if(this.contains(bg)){
 				this.removeChild(bg);
@@ -86,14 +124,13 @@ package lightcon
 		}
 		
 		public function show():void {
-			InGameLightConsole.textField.visible = true;
+			for ( var index:int = 0; index < strings.length; index++) {
+				strings[index].visible = true;
+				lineNumbers[index].visible = true;
+			}
+			
 			InGameLightConsole.visible = true;
 			this.addChildAt(bg,0);
-		}
-		
-		private static function updateTextField():void 
-		{
-			textField.text = string;
 		}
 		
 		private function drawBG():void 
@@ -107,16 +144,27 @@ package lightcon
 		}
 		
 		public static function print(object:Object):void {
-			if ( InGameLightConsole.lineCount >= InGameLightConsole.MAX_LINES) {
-				string = string.substring(string.indexOf(InGameLightConsole.LINE_DELIMITER)+1, string.length);
-			} else {
-				InGameLightConsole.lineCount += 1;
+			lineCount++;
+			
+			if ( InGameLightConsole.lineCount > MAX_LINES) {
+				strings.push(strings.shift());
+				lineNumbers.push(lineNumbers.shift());
+				
+				for ( var index:int = 0; index < strings.length; index++) {
+					strings[index].y -= LINE_HEIGHT;
+					lineNumbers[index].y -= LINE_HEIGHT;
+				}
+				
+				strings[MAX_LINES-1].y = LINE_HEIGHT * (MAX_LINES-1);
+				strings[MAX_LINES-1].text = String(object);
+				lineNumbers[MAX_LINES-1].y = LINE_HEIGHT * (MAX_LINES-1);
+				lineNumbers[MAX_LINES-1].text = lineCount.toString();
+			}else {
+				strings[lineCount-1].text = (String(object));
+				lineNumbers[lineCount-1].text = lineCount.toString();
 			}
 			
 			
-			string += ( String(object) + InGameLightConsole.LINE_DELIMITER );
-
-			updateTextField();
 		}
 		
 		public static function embed(sprite:Sprite):void {
@@ -124,7 +172,10 @@ package lightcon
 				sprite.stage.addChildAt(new InGameLightConsole(sprite.stage),0);
 			}
 		}
-
+		
+		public static function setToggleKey(key:uint):void {
+			toggleKey = key;
+		}
 		
 	}
 
