@@ -1,3 +1,5 @@
+![screenshot](github.com/davecroman/FlashLightCon/blob/master/screenshot.jpeg)
+
 FlashLightCon
 =================
 
@@ -8,11 +10,9 @@ If you're having trouble connecting to the Flash Debugger (possibly because of v
 Setup and Usage
 ---------------
 1. Import the package lightcon on your project.
-2. On your main sprite (or any sprite that has access to the *stage*), add the following line:
+2. On your main sprite (or any sprite that has access to the *stage*), add the line below. *embed(...)* accepts *Sprite* as a parameter. Make sure that the object you're passing has access to the stage.
 
     `InGameLightConsole.embed(this);`
-
-*embed* accepts *Sprite* as a parameter. Make sure that the object you're passing has access to the stage.
 
 3. Display output on the FlashLightCon console by calling its print(object:Object) method.
 
